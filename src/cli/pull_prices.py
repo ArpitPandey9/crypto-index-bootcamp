@@ -4,7 +4,6 @@ from pathlib import Path
 
 from src.data.coingecko import fetch_daily_close_coin
 
-# Optional imports only when used
 def _try_yahoo(coin_id: str):
     from src.data.yahoo import fetch_daily_close_yahoo
     return fetch_daily_close_yahoo(coin_id)
@@ -16,10 +15,10 @@ def _try_ccxt(coin_id: str):
 def main():
     ap = argparse.ArgumentParser(description="Pull daily close data and save parquet.")
     ap.add_argument("--coin_id", required=True, choices=["bitcoin", "ethereum"])
-    ap.add_argument("--days", default="max", help="CoinGecko days parameter; 'max' will auto-fallback to 365 on free tier.")
+    ap.add_argument("--days", default="max", help="CoinGecko days param; 'max' auto-falls to 365 on free tier.")
     ap.add_argument("--out_dir", default="data/raw", help="Root output dir (provider subfolder auto-added).")
     ap.add_argument("--provider", choices=["auto","coingecko","yahoo","ccxt"], default="auto",
-                    help="Force a specific provider for debugging, else try auto fallback chain.")
+                    help="Force a provider (debug) else try auto fallback chain.")
     args = ap.parse_args()
 
     coin = args.coin_id
@@ -46,10 +45,8 @@ def main():
             provider = "ccxt"
             print("[info] CCXT success.")
     except Exception as e:
-        # If we forced a provider, do not try others—fail loudly
         if args.provider != "auto":
             raise
-        # If auto mode failed at some stage, try successive fallbacks
         if provider is None:
             print(f"[warn] CoinGecko failed: {e}")
             try:

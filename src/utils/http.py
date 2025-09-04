@@ -4,7 +4,7 @@ from typing import Dict, Any, Tuple
 
 def get_with_backoff(url: str, params: Dict[str, Any], max_retries: int = 5) -> Tuple[int, Any]:
     delay = 1.0
-    for i in range(max_retries):
+    for _ in range(max_retries):
         r = requests.get(url, params=params, timeout=30)
         if r.status_code == 200:
             return (200, r.json())

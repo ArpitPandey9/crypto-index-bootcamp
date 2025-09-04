@@ -24,9 +24,8 @@ def fetch_daily_close_coin(coin_id: str, vs_currency: str = "usd", days: str = "
                            cache_dir: str | Path = "data/raw/coingecko",
                            ttl_seconds: int = 24*3600) -> pd.DataFrame:
     """
-    Returns DataFrame with: ['timestamp_utc','date','close','volume'] (daily)
-    On free tier, CoinGecko limits to last 365 days. If days='max', we
-    gracefully retry with days='365' instead of crashing.
+    Returns ['timestamp_utc','date','close','volume'] (daily).
+    Free tier: if days='max' hits error_code=10012, retry transparently with days='365'.
     """
     cache_path = Path(cache_dir) / f"{coin_id}_{vs_currency}_{days}_market_chart.json"
     meta = read_json_cache(cache_path)
@@ -36,7 +35,6 @@ def fetch_daily_close_coin(coin_id: str, vs_currency: str = "usd", days: str = "
         params = {"vs_currency": vs_currency, "days": days, "interval": "daily"}
         status, payload = get_with_backoff(f"{BASE}/coins/{coin_id}/market_chart", params)
 
-        # Handle 365d limit (error_code=10012) by retrying with 365
         if status == 401 and isinstance(payload, dict):
             err = payload.get("error", {}).get("status", {})
             if err.get("error_code") == 10012 and days == "max":

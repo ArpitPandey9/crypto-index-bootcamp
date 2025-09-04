@@ -5,7 +5,8 @@ from typing import Any, Dict
 
 def read_json_cache(path: str | Path) -> Dict[str, Any] | None:
     p = Path(path)
-    if not p.exists(): return None
+    if not p.exists():
+        return None
     with p.open("r", encoding="utf-8") as f:
         return json.load(f)
 
