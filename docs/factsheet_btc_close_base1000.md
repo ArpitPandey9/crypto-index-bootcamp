@@ -1,5 +1,5 @@
 # BTC Close-only Baseline (Base=1000)
-- **CAGR:** 106.92%
+- **CAGR:** 106.11%
 - **Annualized Vol:** 48.45%
 - **Max Drawdown:** -28.15%
 
