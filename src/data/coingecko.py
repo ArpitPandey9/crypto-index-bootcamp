@@ -25,29 +25,25 @@ def fetch_daily_close_coin(coin_id: str, vs_currency: str = "usd", days: str = "
                            ttl_seconds: int = 24*3600) -> pd.DataFrame:
     """
     Returns DataFrame with: ['timestamp_utc','date','close','volume'] (daily)
-    On free tier, CoinGecko now limits to last 365 days. If days='max', we
-    gracefully fallback to days='365' rather than crashing.
+    On free tier, CoinGecko limits to last 365 days. If days='max', we
+    gracefully retry with days='365' instead of crashing.
     """
     cache_path = Path(cache_dir) / f"{coin_id}_{vs_currency}_{days}_market_chart.json"
     meta = read_json_cache(cache_path)
     if meta and is_fresh(meta, ttl_seconds):
         payload = meta
     else:
-        params = {"vs_currency": vs_currency, "days": days, "interval":"daily"}
+        params = {"vs_currency": vs_currency, "days": days, "interval": "daily"}
         status, payload = get_with_backoff(f"{BASE}/coins/{coin_id}/market_chart", params)
-        # Handle "max history not allowed" gracefully
+
+        # Handle 365d limit (error_code=10012) by retrying with 365
         if status == 401 and isinstance(payload, dict):
             err = payload.get("error", {}).get("status", {})
             if err.get("error_code") == 10012 and days == "max":
-                # retry with 365 days (free limit)
                 params["days"] = "365"
-                status2, payload2 = get_with_backoff(f"{BASE}/coins/{coin_id}/market_chart", params)
-                if status2 != 200:
-                    raise RuntimeError(f"CoinGecko error {status2}: {payload2}")
-                payload = payload2
-            else:
-                raise RuntimeError(f"CoinGecko error {status}: {payload}")
-        elif status != 200:
+                status, payload = get_with_backoff(f"{BASE}/coins/{coin_id}/market_chart", params)
+
+        if status != 200:
             raise RuntimeError(f"CoinGecko error {status}: {payload}")
 
         payload["_fetched_at"] = time.time()
