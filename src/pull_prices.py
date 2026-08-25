@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 from src.coingecko import get_market_chart_daily
 from src.paths import DATA_PROC
 

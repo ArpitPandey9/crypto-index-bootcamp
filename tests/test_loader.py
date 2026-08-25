@@ -1,4 +1,4 @@
-﻿from src.coingecko import get_market_chart_daily
+from src.coingecko import get_market_chart_daily
 
 def test_pull_btc_minimal():
     df, source = get_market_chart_daily(days=30)

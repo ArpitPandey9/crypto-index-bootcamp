@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 import pandas as pd
 from src.paths import DATA_PROC
 
